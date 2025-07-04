@@ -8,7 +8,7 @@ import { setSingleJob } from '@/redux/jobSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import Navbar from './shared/Navbar';
-import { getTokenFromCookie } from '@/lib/utils';
+import { getToken } from '@/lib/utils';
 
 const JobDescription = () => {
     const {singleJob} = useSelector(store => store.job);
@@ -27,7 +27,7 @@ const JobDescription = () => {
             return;
         }
         try {
-            const token = getTokenFromCookie();
+            const token = getToken();
             const res = await axios.get(`${APPLICATION_API_END_POINT}/apply/${jobId}`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
@@ -48,7 +48,7 @@ const JobDescription = () => {
     useEffect(()=>{
         const fetchSingleJob = async () => {
             try {
-                const token = getTokenFromCookie();
+                const token = getToken();
                 const res = await axios.get(`${JOB_API_END_POINT}/get/${jobId}`,{
                     headers: token ? { Authorization: `Bearer ${token}` } : {},
                 });

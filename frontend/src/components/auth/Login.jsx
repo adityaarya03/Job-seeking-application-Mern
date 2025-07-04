@@ -38,6 +38,9 @@ const Login = () => {
             });
             if (res.data.success) {
                 dispatch(setUser(res.data.user));
+                if (res.data.token) {
+                    localStorage.setItem('token', res.data.token);
+                }
                 navigate("/");
                 toast.success(res.data.message);
             }

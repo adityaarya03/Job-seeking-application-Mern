@@ -9,7 +9,7 @@ import { USER_API_END_POINT } from '@/utils/constant';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import { setUser } from '@/redux/authSlice';
-import { getTokenFromCookie } from '@/lib/utils';
+import { getToken } from '@/lib/utils';
 
 const Job = ({job}) => {
     const navigate = useNavigate();
@@ -25,7 +25,7 @@ const Job = ({job}) => {
         }
         setLoading(true);
         try {
-            const token = getTokenFromCookie();
+            const token = getToken();
             if (isSaved) {
                 // Unsave job
                 const res = await axios.post(`${USER_API_END_POINT}/unsave-job`, { jobId: job._id }, {
