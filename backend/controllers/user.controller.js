@@ -169,3 +169,60 @@ export const updateProfile = async (req, res) => {
         console.log(error);
     }
 }
+
+export const saveJob = async (req, res) => {
+    try {
+        const userId = req.id;
+        const { jobId } = req.body;
+        if (!jobId) {
+            return res.status(400).json({ message: 'Job ID is required', success: false });
+        }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found', success: false });
+        }
+        if (user.savedJobs.includes(jobId)) {
+            return res.status(400).json({ message: 'Job already saved', success: false });
+        }
+        user.savedJobs.push(jobId);
+        await user.save();
+        return res.status(200).json({ message: 'Job saved successfully', success: true });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Internal server error', success: false });
+    }
+};
+
+export const unsaveJob = async (req, res) => {
+    try {
+        const userId = req.id;
+        const { jobId } = req.body;
+        if (!jobId) {
+            return res.status(400).json({ message: 'Job ID is required', success: false });
+        }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found', success: false });
+        }
+        user.savedJobs = user.savedJobs.filter(id => id.toString() !== jobId);
+        await user.save();
+        return res.status(200).json({ message: 'Job removed from saved', success: true });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Internal server error', success: false });
+    }
+};
+
+export const getSavedJobs = async (req, res) => {
+    try {
+        const userId = req.id;
+        const user = await User.findById(userId).populate('savedJobs');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found', success: false });
+        }
+        return res.status(200).json({ savedJobs: user.savedJobs, success: true });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Internal server error', success: false });
+    }
+};

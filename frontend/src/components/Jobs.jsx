@@ -7,21 +7,50 @@ import { motion } from 'framer-motion';
 
 
 const Jobs = () => {
-    const { allJobs, searchedQuery } = useSelector(store => store.job);
+    const { allJobs, searchedQuery, customFilters } = useSelector(store => store.job);
+    const { user } = useSelector(store => store.auth);
     const [filterJobs, setFilterJobs] = useState(allJobs);
+    const safeCustomFilters = Array.isArray(customFilters) ? customFilters : [];
 
     useEffect(() => {
-        if (searchedQuery) {
-            const filteredJobs = allJobs.filter((job) => {
+        let jobs = Array.isArray(allJobs) ? allJobs : [];
+        // Saved jobs filter
+        if (searchedQuery === 'SAVED_JOBS') {
+            if (user && user.savedJobs) {
+                jobs = jobs.filter(job => user.savedJobs.includes(job._id));
+            } else {
+                jobs = [];
+            }
+        } else if (searchedQuery) {
+            jobs = jobs.filter((job) => {
                 return job.title.toLowerCase().includes(searchedQuery.toLowerCase()) ||
                     job.description.toLowerCase().includes(searchedQuery.toLowerCase()) ||
                     job.location.toLowerCase().includes(searchedQuery.toLowerCase())
-            })
-            setFilterJobs(filteredJobs)
-        } else {
-            setFilterJobs(allJobs)
+            });
         }
-    }, [allJobs, searchedQuery]);
+        // Apply custom filters
+        if (safeCustomFilters.length > 0) {
+            jobs = jobs.filter(job => {
+                return safeCustomFilters.every(filter => {
+                    const val = filter.value.toLowerCase();
+                    if (filter.type === 'location') {
+                        return job.location?.toLowerCase().includes(val);
+                    } else if (filter.type === 'industry') {
+                        // Assuming job.description or job.title contains industry info
+                        return job.title?.toLowerCase().includes(val) || job.description?.toLowerCase().includes(val);
+                    } else if (filter.type === 'salary') {
+                        return String(job.salary).toLowerCase().includes(val);
+                    } else if (filter.type === 'title') {
+                        return job.title?.toLowerCase().includes(val);
+                    } else if (filter.type === 'company') {
+                        return job.company?.name?.toLowerCase().includes(val);
+                    }
+                    return true;
+                });
+            });
+        }
+        setFilterJobs(jobs);
+    }, [allJobs, searchedQuery, user, safeCustomFilters]);
 
     return (
         <div>
@@ -32,7 +61,7 @@ const Jobs = () => {
                         <FilterCard />
                     </div>
                     {
-                        filterJobs.length <= 0 ? <span>Job not found</span> : (
+                        (Array.isArray(filterJobs) && filterJobs.length > 0) ? (
                             <div className='flex-1 h-[88vh] overflow-y-auto pb-5'>
                                 <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
                                     {
@@ -49,6 +78,8 @@ const Jobs = () => {
                                     }
                                 </div>
                             </div>
+                        ) : (
+                            <span>Job not found</span>
                         )
                     }
                 </div>
