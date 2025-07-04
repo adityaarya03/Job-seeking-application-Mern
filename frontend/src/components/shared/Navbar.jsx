@@ -9,6 +9,7 @@ import axios from 'axios'
 import { USER_API_END_POINT } from '@/utils/constant'
 import { setUser } from '@/redux/authSlice'
 import { toast } from 'sonner'
+import { getTokenFromCookie } from '@/lib/utils'
 
 const Navbar = () => {
     const { user } = useSelector(store => store.auth);
@@ -18,7 +19,10 @@ const Navbar = () => {
 
     const logoutHandler = async () => {
         try {
-            const res = await axios.get(`${USER_API_END_POINT}/logout`, { withCredentials: true });
+            const token = getTokenFromCookie();
+            const res = await axios.get(`${USER_API_END_POINT}/logout`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
             if (res.data.success) {
                 dispatch(setUser(null));
                 navigate("/");

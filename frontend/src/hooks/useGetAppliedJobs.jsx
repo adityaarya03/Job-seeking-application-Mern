@@ -3,14 +3,18 @@ import { APPLICATION_API_END_POINT } from "@/utils/constant";
 import axios from "axios"
 import { useEffect } from "react"
 import { useDispatch } from "react-redux"
+import { getTokenFromCookie } from '@/lib/utils';
 
 const useGetAppliedJobs = () => {
     const dispatch = useDispatch();
 
     useEffect(()=>{
-        const fetchAppliedJobs = async () => {
+        const getAppliedJobs = async () => {
             try {
-                const res = await axios.get(`${APPLICATION_API_END_POINT}/get`, {withCredentials:true});
+                const token = getTokenFromCookie();
+                const res = await axios.get(`${APPLICATION_API_END_POINT}/get`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                });
                 console.log(res.data);
                 if(res.data.success){
                     dispatch(setAllAppliedJobs(res.data.application));
@@ -19,7 +23,7 @@ const useGetAppliedJobs = () => {
                 console.log(error);
             }
         }
-        fetchAppliedJobs();
+        getAppliedJobs();
     },[])
 };
 export default useGetAppliedJobs;

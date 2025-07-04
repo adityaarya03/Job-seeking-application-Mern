@@ -9,6 +9,7 @@ import { USER_API_END_POINT } from '@/utils/constant';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import { setUser } from '@/redux/authSlice';
+import { getTokenFromCookie } from '@/lib/utils';
 
 const Job = ({job}) => {
     const navigate = useNavigate();
@@ -24,9 +25,12 @@ const Job = ({job}) => {
         }
         setLoading(true);
         try {
+            const token = getTokenFromCookie();
             if (isSaved) {
                 // Unsave job
-                const res = await axios.post(`${USER_API_END_POINT}/unsave-job`, { jobId: job._id }, { withCredentials: true });
+                const res = await axios.post(`${USER_API_END_POINT}/unsave-job`, { jobId: job._id }, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                });
                 if (res.data.success) {
                     // Optimistically update user in Redux
                     dispatch(setUser({ ...user, savedJobs: user.savedJobs.filter(id => id !== job._id) }));
@@ -34,7 +38,9 @@ const Job = ({job}) => {
                 }
             } else {
                 // Save job
-                const res = await axios.post(`${USER_API_END_POINT}/save-job`, { jobId: job._id }, { withCredentials: true });
+                const res = await axios.post(`${USER_API_END_POINT}/save-job`, { jobId: job._id }, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                });
                 if (res.data.success) {
                     dispatch(setUser({ ...user, savedJobs: [...(user.savedJobs || []), job._id] }));
                     toast.success('Job saved for later!');
