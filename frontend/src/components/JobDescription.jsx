@@ -21,6 +21,10 @@ const JobDescription = () => {
     const navigate = useNavigate();
 
     const applyJobHandler = async () => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
         try {
             const res = await axios.get(`${APPLICATION_API_END_POINT}/apply/${jobId}`, {withCredentials:true});
             
@@ -33,7 +37,7 @@ const JobDescription = () => {
             }
         } catch (error) {
             console.log(error);
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || 'Something went wrong.');
         }
     }
 
